@@ -1,0 +1,91 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.min.js"></script>
+    <script type="text/javascript" src="hue.js"></script>
+</head>
+
+<body>
+    <h1>Phillips Hue Control Panel</h1>
+    <div id="lights-container">
+        <div>lights</div>
+        <form id="light-form">
+            <ul id="lights-list"></ul>
+            <div id="light-value">
+                <div>
+                    <label for="light_id">light_id</label>
+                    <input type="text" name="light_id">
+                </div>
+                <div>
+                    <label for="name">name</label>
+                    <input type="text" name="name">
+                </div>
+                <div>
+                    <label for="colormode">colormode</label>
+                    <input type="text" name="colormode">
+                </div>
+                <div>
+                    <label for="hue">hue</label>
+                    <input type="number" name="hue"></input>
+                </div>
+                <div>
+                    <label for="saturation">saturation</label>
+                    <input type="number" name="saturation"></input>
+                </div>
+                <div>
+                    <label for="effect">effect</label>
+                    <select name="alert">
+						<option value="null">None</option>
+						<option value="colorloop">Color Loop</option>
+					</select>
+                </div>
+                <div>
+                    <label for="alert">alert</label>
+                    <select name="alert">
+						<option value="null">None</option>
+						<option value="select">Select</option>
+					</select>
+                </div>
+                <div>
+                    <label for="transitiontime">transitiontime</label>
+                    <input type="number" name="transitiontime">
+                </div>
+                <div>
+                    <label for="colortemp">colortemp</label>
+                    <input type="number" name="colortemp">
+                </div>
+                <div>
+                    <label for="x">X</label>
+                    <input type="text" name="x">
+                    <label for="y">Y</label>
+                    <input type="text" name="y">
+                </div>
+                <div>
+                    <label for="on">on</label>
+                    <select name="on">
+						<option value="true">True</option>
+						<option value="false">False</option>
+					</select>
+                </div>
+                <div>
+                    <label for="brightness">brightness</label>
+                    <input type="number" name="brightness">
+                </div>
+            </div>
+            <input type="submit" value="Save">
+        </form>
+    </div>
+    <div id="groups-container">
+        <div>groups</div>
+        <form id="group-form">
+            <ul id="groups-list"></ul>
+            <div id="group-value"></div>
+            <input type="submit" value="Save">
+        </form>
+    </div>
+</body>
+
+</html>

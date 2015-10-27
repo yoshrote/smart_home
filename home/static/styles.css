@@ -1,0 +1,39 @@
+#lights-container{
+	width: 800px;
+}
+#groups-container{
+	width: 800px;
+}
+
+#lights-list {
+	display: inline-block;
+	width: 200px;
+}
+#groups-list {
+	display: inline-block;
+	width: 200px;
+}
+#light-value {
+	display: inline-block;
+	vertical-align: top;
+	width: 500px;
+}
+#light-value div{
+	width: 500px;
+}
+#light-value label{
+	display: inline-block;
+	width: 200px;
+}
+#light-value input{
+	display: inline-block;
+	width: 200px;
+}
+
+#group-value {
+	display: inline-block;
+	vertical-align: top;
+	overflow: scroll;
+	width: 500px;
+	height: 150px;
+}
