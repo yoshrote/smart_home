@@ -13,36 +13,36 @@
 	display: inline-block;
 	width: 200px;
 }
-#light-value {
+.light-value {
 	display: inline-block;
 	vertical-align: top;
 	width: 500px;
 }
-#light-value div{
+.light-value div{
 	width: 500px;
 }
-#light-value label{
+.light-value label{
 	display: inline-block;
 	width: 200px;
 }
-#light-value input{
+.light-value input, .light-value select{
 	display: inline-block;
 	width: 200px;
 }
 
-#group-value {
+.group-value {
 	display: inline-block;
 	vertical-align: top;
 	width: 500px;
 }
-#group-value div{
+.group-value div{
 	width: 500px;
 }
-#group-value label{
+.group-value label{
 	display: inline-block;
 	width: 200px;
 }
-#group-value input{
+.group-value input, .group-value select{
 	display: inline-block;
 	width: 200px;
 }

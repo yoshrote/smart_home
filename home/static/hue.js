@@ -8,11 +8,12 @@ var info = function(msg){
 
 var Light = {
 	disabledFields: ['light_id'],
-	load: function(context, lightId){
+	load: function(context, lightId, options){
 		info('load')
-		debug(context)
+		info(context)
 		debug(arguments)
-		var formEl = $("#light-form");
+		info(options)
+		var formEl = $(options.lights.form);
 		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/lights/'+lightId, function(data){
 			debug('Light('+lightId+') ->' + JSON.stringify(data))
@@ -43,22 +44,27 @@ var Light = {
 		data['transitiontime'] = data['transitiontime'] == "" ? null : Number.parseFloat(data['transitiontime']);
 		return data;
 	},
-	renderList: function(data) {
-		$("#lights-list").html("");
+	renderList: function(data, options) {
+		$(options.lights.list).html("");
 		info('renderList')
 		debug(data)
 		debug(arguments)
+		debug(options)
 		data.forEach(function(object){
 			var light = $("<li>");
 			light.attr('data-id', object[0])
 			light.html(object[1]);
-			$("#lights-list").append(light);
+			$(options.lights.list).append(light);
 		});
-		$("#lights-list li").on("click", function(){Light.load(this, $(this).attr("data-id"))});
+		$(options.lights.list + " li").on("click", function(){Light.load(
+			this,
+			$(this).attr("data-id"),
+			options
+		)});
 	},
-	save: function() {
+	save: function(options) {
 		info('save');
-		var formEl = $("#light-form")
+		var formEl = $(options.lights.form)
 		Light.disabledFields.forEach(function(disabledField) {
 			formEl.find("*[name="+ disabledField +"]").removeAttr('disabled')
 		})
@@ -66,8 +72,9 @@ var Light = {
 		Light.disabledFields.forEach(function(disabledField) {
 			formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");
 		})
-		debug(data);
+		info(data);
 		debug(arguments)
+		info(options)
 		var light_id = data['light_id'];
 		$.ajax({
 			type: "POST",
@@ -77,7 +84,7 @@ var Light = {
 			data: JSON.stringify(data),
 			success: function () {
 				info("update complete");
-				getMenu();
+				getMenu(options);
 			}
 		});
 		return false;
@@ -86,14 +93,15 @@ var Light = {
 
 var Group = {
 	disabledFields: ['group_id'],
-	load: function(context, groupId){
+	load: function(context, groupId, options){
 		info('load')
 		debug(context)
 		debug(arguments)
-		var formEl = $("#group-form");
+		debug(options)
+		var formEl = $(options.groups.form);
 		formEl.find("*[name=alert]").removeAttr("checked")
-		$.getJSON('/hue/groups/'+$(this).attr("data-id"), function(data){
-			debug('Group('+groupId+') ->' + JSON.stringify(data))
+		$.getJSON('/hue/groups/'+groupId, function(data){
+			info('Group('+groupId+') ->' + JSON.stringify(data))
 			formEl.find("*[name=group_id]").val(groupId);
 			for(var field_name in data) {
 				if(field_name == "on"){
@@ -121,20 +129,28 @@ var Group = {
 		data['transitiontime'] = data['transitiontime'] == "" ? null : Number.parseFloat(data['transitiontime']);
 		return data;
 	},
-	renderList: function(data){
-		$("#groups-list").html("");
+	renderList: function(data, options){
+		info('renderList')
+		debug(data)
+		debug(arguments)
+		debug(options)
+		$(options.groups.list).html("");
 		data.forEach(function(object){
 			var group = $("<li>");
 			group.attr('data-id', object[0])
 			group.html(object[1]);
-			$("#groups-list").append(group);
+			$(options.groups.list).append(group);
 
 		});
-		$("#groups-list li").on("click", Group.load);
+		$(options.groups.list + " li").on("click", function(){Group.load(
+			this,
+			$(this).attr("data-id"),
+			options
+		)});
 	},
-	save: function() {
+	save: function(options) {
 		info('save');
-		var formEl = $("#group-form")
+		var formEl = $(options.groups.form)
 		Group.disabledFields.forEach(function(disabledField) {
 			formEl.find("*[name="+ disabledField +"]").removeAttr('disabled')
 		})
@@ -144,6 +160,7 @@ var Group = {
 		})
 		debug(data);
 		debug(arguments)
+		debug(options)
 		var group_id = data['group_id'];
 		$.ajax({
 			type: "POST",
@@ -153,21 +170,29 @@ var Group = {
 			data: JSON.stringify(data),
 			success: function () {
 				info("update complete");
-				getMenu();
+				getMenu(options);
 			}
 		});
 		return false;
 	}
 }
 
-var getMenu = function(){
-	$.getJSON('/hue/lights', Light.renderList, {list: "#lights-list"});
-	$.getJSON('/hue/groups', Group.renderList);
+var getMenu = function(options){
+	$.getJSON('/hue/lights', function(data){
+		Light.renderList(data, options)
+	});
+	$.getJSON('/hue/groups', function(data){
+		Group.renderList(data, options)
+	});
 }
 
 $(document).ready(function(){
-	getMenu();
+	options = {
+		lights: {list: "#lights-list", form: "#lights-form"},
+		groups: {list: "#groups-list", form: "#groups-form"}
+	}
+	getMenu(options);
 
-	$("#light-form").on('submit', Light.save);
-	$("#group-form").on('submit', Group.save);
+	$(options.lights.form).on('submit', function(){Light.save(options)});
+	$(options.groups.form).on('submit', function(){Group.save(options)});
 });
