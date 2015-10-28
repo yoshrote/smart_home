@@ -5,45 +5,62 @@ var info = function(msg){
 	console.log(msg)
 }
 
-var HueForm = function(idField){
-	var el = $("<div>")
-	el.html(' \
-        <div> \
-            <label for="'+idField+'">'+idField+'</label> \
-            <input type="text" name="'+idField+'"> \
-        </div> \
-        <div> \
-            <label for="name">name</label> \
-            <input type="text" name="name"> \
-        </div> \
-        <div> \
-            <label for="on">on</label> \
-            <select name="on"> \
-                <option value="true">True</option> \
-                <option value="false">False</option> \
-            </select> \
-        </div> \
-        <div> \
-            <label for="color">color</label> \
-            <input type="color" name="color"></input> \
-        </div> \
-        <div> \
-            <label for="effect">effect</label> \
-            <select name="effect"> \
-				<option value="none" selected>None</option> \
-				<option value="colorloop">Color Loop</option> \
-			</select> \
-        </div> \
-        <div> \
-            <label for="alert">alert</label> \
-            <input type="checkbox" name="alert" value="select"></input> \
-        </div> \
-        <div> \
-            <label for="transitiontime">transitiontime</label> \
-            <input type="number" name="transitiontime"> \
-        </div> \
-    ')
-	return el
+var HueTemplate = {
+	form: function(idField){
+		var el = $("<div>")
+		el.html(' \
+	        <div> \
+	            <label for="'+idField+'">'+idField+'</label> \
+	            <input type="text" name="'+idField+'"> \
+	        </div> \
+	        <div> \
+	            <label for="name">name</label> \
+	            <input type="text" name="name"> \
+	        </div> \
+	        <div> \
+	            <label for="on">on</label> \
+	            <select name="on"> \
+	                <option value="true">True</option> \
+	                <option value="false">False</option> \
+	            </select> \
+	        </div> \
+	        <div> \
+	            <label for="color">color</label> \
+	            <input type="color" name="color"></input> \
+	        </div> \
+	        <div> \
+	            <label for="effect">effect</label> \
+	            <select name="effect"> \
+					<option value="none" selected>None</option> \
+					<option value="colorloop">Color Loop</option> \
+				</select> \
+	        </div> \
+	        <div> \
+	            <label for="alert">alert</label> \
+	            <input type="checkbox" name="alert" value="select"></input> \
+	        </div> \
+	        <div> \
+	            <label for="transitiontime">transitiontime</label> \
+	            <input type="number" name="transitiontime"> \
+	        </div> \
+	    ')
+		return el
+	},
+	container: function(type){
+		var el = $("<div>")
+		el.html(' \
+		    <div class="'+type+'-container"> \
+		        <div>'+type+'</div> \
+		        <ul class="'+type+'-list"></ul> \
+		        <form class="'+type+'-form"> \
+		            <div class="'+type+'-value"></div> \
+		            <input type="submit" value="Save"> \
+		        </form> \
+		    </div> \
+	    ')
+		return el
+
+	}
 }
 
 var Light = {
@@ -57,7 +74,7 @@ var Light = {
 		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/lights/'+lightId, function(data){
 			debug('Light('+lightId+') ->' + JSON.stringify(data))
-			formEl.find(options.fields).html(HueForm('light_id').html())
+			formEl.find(options.fields).html(HueTemplate.form('light_id').html())
 			formEl.find("*[name=light_id]").val(lightId);
 			for(var field_name in data) {
 				if(field_name == "on"){
@@ -145,7 +162,7 @@ var Group = {
 		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/groups/'+groupId, function(data){
 			debug('Group('+groupId+') ->' + JSON.stringify(data))
-			formEl.find(options.fields).html(HueForm('group_id').html())
+			formEl.find(options.fields).html(HueTemplate.form('group_id').html())
 			formEl.find("*[name=group_id]").val(groupId);
 			for(var field_name in data) {
 				if(field_name == "on"){
@@ -224,13 +241,23 @@ var Group = {
 }
 
 $(document).ready(function(){
-	options = {
-		lights: {list: "#lights-list", form: "#lights-form", fields: ".light-value"},
-		groups: {list: "#groups-list", form: "#groups-form", fields: ".group-value"}
+	var options = {
+		lights: {list: ".lights-list", form: ".lights-form", fields: ".lights-value"},
+		groups: {list: ".groups-list", form: ".groups-form", fields: ".groups-value"},
+		controlArea: "#hue-control",
+		menuItems: "a.menu-control"
 	}
-	Light.renderList(options.lights)
-	Group.renderList(options.groups)
+	var classes = {
+		lights: Light,
+		groups: Group
+	}
 
-	$(options.lights.form).on('submit', function(){Light.save(options.lights)});
-	$(options.groups.form).on('submit', function(){Group.save(options.groups)});
+	$(options.menuItems).on('click', function(){
+		info('menu control')
+		var menuType = $(this).attr('data-type');
+		info(menuType)
+		$(options.controlArea).html(HueTemplate.container(menuType).html());
+		$(options[menuType].form).on('submit', function(){classes[menuType].save(options[menuType])});
+		classes[menuType].renderList(options[menuType])
+	})
 });

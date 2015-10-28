@@ -1,48 +1,58 @@
-#lights-container{
+.lights-container{
 	width: 800px;
 }
-#groups-container{
+.groups-container{
 	width: 800px;
 }
 
-#lights-list {
+.lights-list {
+	display: inline-block;
+	vertical-align: top;
+	width: 200px;
+}
+.groups-list {
+	display: inline-block;
+	vertical-align: top;
+	width: 200px;
+}
+.lights-form {
 	display: inline-block;
 	width: 200px;
 }
-#groups-list {
+.groups-form {
 	display: inline-block;
 	width: 200px;
 }
-.light-value {
+.lights-value {
 	display: inline-block;
 	vertical-align: top;
 	width: 500px;
 }
-.light-value div{
+.lights-value div{
 	width: 500px;
 }
-.light-value label{
+.lights-value label{
 	display: inline-block;
 	width: 200px;
 }
-.light-value input, .light-value select{
+.lights-value input, .lights-value select{
 	display: inline-block;
 	width: 200px;
 }
 
-.group-value {
+.groups-value {
 	display: inline-block;
 	vertical-align: top;
 	width: 500px;
 }
-.group-value div{
+.groups-value div{
 	width: 500px;
 }
-.group-value label{
+.groups-value label{
 	display: inline-block;
 	width: 200px;
 }
-.group-value input, .group-value select{
+.groups-value input, .groups-value select{
 	display: inline-block;
 	width: 200px;
 }
