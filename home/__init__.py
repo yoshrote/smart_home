@@ -23,6 +23,5 @@ def main(global_config, **settings):
 
 	config.include('pyramid_chameleon')
 	config.add_static_view('static', 'static')#, cache_max_age=3600)
-	config.add_route('home', '/')
-	config.scan()
+	# config.add_route('home', '/')
 	return config.make_wsgi_app()
