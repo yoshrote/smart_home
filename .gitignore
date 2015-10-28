@@ -1,3 +1,4 @@
 *.pyc
 production.ini
+*.egg-info
 
