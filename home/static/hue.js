@@ -5,6 +5,46 @@ var info = function(msg){
 	console.log(msg)
 }
 
+var HueForm = function(idField){
+	var el = $("<div>")
+	el.html(' \
+        <div> \
+            <label for="'+idField+'">'+idField+'</label> \
+            <input type="text" name="'+idField+'"> \
+        </div> \
+        <div> \
+            <label for="name">name</label> \
+            <input type="text" name="name"> \
+        </div> \
+        <div> \
+            <label for="on">on</label> \
+            <select name="on"> \
+                <option value="true">True</option> \
+                <option value="false">False</option> \
+            </select> \
+        </div> \
+        <div> \
+            <label for="color">color</label> \
+            <input type="color" name="color"></input> \
+        </div> \
+        <div> \
+            <label for="effect">effect</label> \
+            <select name="effect"> \
+				<option value="none" selected>None</option> \
+				<option value="colorloop">Color Loop</option> \
+			</select> \
+        </div> \
+        <div> \
+            <label for="alert">alert</label> \
+            <input type="checkbox" name="alert" value="select"></input> \
+        </div> \
+        <div> \
+            <label for="transitiontime">transitiontime</label> \
+            <input type="number" name="transitiontime"> \
+        </div> \
+    ')
+	return el
+}
 
 var Light = {
 	disabledFields: ['light_id'],
@@ -17,6 +57,7 @@ var Light = {
 		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/lights/'+lightId, function(data){
 			debug('Light('+lightId+') ->' + JSON.stringify(data))
+			formEl.find(options.fields).html(HueForm('light_id').html())
 			formEl.find("*[name=light_id]").val(lightId);
 			for(var field_name in data) {
 				if(field_name == "on"){
@@ -104,6 +145,7 @@ var Group = {
 		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/groups/'+groupId, function(data){
 			debug('Group('+groupId+') ->' + JSON.stringify(data))
+			formEl.find(options.fields).html(HueForm('group_id').html())
 			formEl.find("*[name=group_id]").val(groupId);
 			for(var field_name in data) {
 				if(field_name == "on"){
@@ -183,8 +225,8 @@ var Group = {
 
 $(document).ready(function(){
 	options = {
-		lights: {list: "#lights-list", form: "#lights-form"},
-		groups: {list: "#groups-list", form: "#groups-form"}
+		lights: {list: "#lights-list", form: "#lights-form", fields: ".light-value"},
+		groups: {list: "#groups-list", form: "#groups-form", fields: ".group-value"}
 	}
 	Light.renderList(options.lights)
 	Group.renderList(options.groups)
