@@ -8,9 +8,11 @@ var Light = {
 		var lightId = $(context).attr("data-id");
 		var formEl = $("#light-form");
 		$.getJSON('/hue/lights/'+lightId, function(data){
-			console.log('Light() ->' + JSON.stringify(data))
+			// console.log('Light() ->' + JSON.stringify(data))
 			//$("#light-value").text(JSON.stringify(data, null, 4));
+			// console.log('lightId = '+lightId)
 			formEl.find("*[name=light_id]").val(lightId);
+			// console.log(formEl.find("*[name=light_id]").val())
 			for(var field_name in data) {
 				if(field_name == "xy"){
 					formEl.find("*[name=x]").val(data[field_name][0]);
@@ -28,13 +30,13 @@ var Light = {
 	},
 	toJson: function(dataArray){
 		console.log('toJson');
+		// console.log(dataArray)
 		var data = new Object();
 		dataArray.forEach(function(field){
 			data[field.name] = field.value;
 		});
-		console.log(data);
-		console.log(data.light_id)
-		console.log(arguments)
+		// console.log(data);
+		// console.log(arguments)
 		// data['colortemp'] = Number.parseInt(data['colortemp'])
 		// data['x'] = Number.parseInt(data['x'])
 		// data['y'] = Number.parseInt(data['y'])
@@ -64,12 +66,20 @@ var Light = {
 		$("#lights-list li").on("click", function(){Light.load(this)});
 	},
 	save: function() {
-		var data = Light.toJson($("#light-form").serializeArray());
 		console.log('save');
-		console.log(data);
-		console.log(arguments)
+		var formEl = $("#light-form")
+		Light.disabledFields.forEach(function(disabledField) {
+			formEl.find("*[name="+ disabledField +"]").removeAttr('disabled')
+		})
+		var serializeArray = formEl.serializeArray();
+		// console.log(serializeArray)
+		var data = Light.toJson(serializeArray);
+		Light.disabledFields.forEach(function(disabledField) {
+			formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");	
+		})
+		// console.log(data);
+		// console.log(arguments)
 		var light_id = data['light_id'];
-		delete data['light_id'];
 		$.ajax({
 			type: "POST",
 			url: '/hue/lights/'+light_id,
