@@ -24,8 +24,11 @@
                     <input type="text" name="name">
                 </div>
                 <div>
-                    <label for="colormode">colormode</label>
-                    <input type="text" name="colormode">
+                    <label for="on">on</label>
+                    <select name="on">
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                    </select>
                 </div>
                 <div>
                     <label for="hue">hue</label>
@@ -36,22 +39,27 @@
                     <input type="number" name="saturation"></input>
                 </div>
                 <div>
+                    <label for="brightness">brightness</label>
+                    <input type="number" name="brightness">
+                </div>
+                <div>
                     <label for="effect">effect</label>
-                    <select name="alert">
-						<option value="null">None</option>
+                    <select name="effect">
+						<option value="none" selected>None</option>
 						<option value="colorloop">Color Loop</option>
 					</select>
                 </div>
                 <div>
                     <label for="alert">alert</label>
-                    <select name="alert">
-						<option value="null">None</option>
-						<option value="select">Select</option>
-					</select>
+                    <input type="checkbox" name="alert" value="select"></input>
                 </div>
                 <div>
                     <label for="transitiontime">transitiontime</label>
                     <input type="number" name="transitiontime">
+                </div>
+                <div>
+                    <label for="colormode">colormode</label>
+                    <input type="text" name="colormode">
                 </div>
                 <div>
                     <label for="colortemp">colortemp</label>
@@ -62,17 +70,6 @@
                     <input type="text" name="x">
                     <label for="y">Y</label>
                     <input type="text" name="y">
-                </div>
-                <div>
-                    <label for="on">on</label>
-                    <select name="on">
-						<option value="true">True</option>
-						<option value="false">False</option>
-					</select>
-                </div>
-                <div>
-                    <label for="brightness">brightness</label>
-                    <input type="number" name="brightness">
                 </div>
             </div>
             <input type="submit" value="Save">

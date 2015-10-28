@@ -1,12 +1,12 @@
 
 var Light = {
 	disabledFields: ['x', 'y', 'colormode', 'light_id', 'colortemp'],
-	load: function(context){
+	load: function(context, lightId){
 		console.log('load')
 		// console.log(context)
 		// console.log(arguments)
-		var lightId = $(context).attr("data-id");
 		var formEl = $("#light-form");
+		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/lights/'+lightId, function(data){
 			// console.log('Light() ->' + JSON.stringify(data))
 			//$("#light-value").text(JSON.stringify(data, null, 4));
@@ -28,7 +28,8 @@ var Light = {
 			})
 		});
 	},
-	toJson: function(dataArray){
+	toJson: function(formEl){
+		var dataArray = formEl.serializeArray();
 		console.log('toJson');
 		// console.log(dataArray)
 		var data = new Object();
@@ -63,7 +64,7 @@ var Light = {
 			light.html(object[1]);
 			$("#lights-list").append(light);
 		});
-		$("#lights-list li").on("click", function(){Light.load(this)});
+		$("#lights-list li").on("click", function(){Light.load(this, $(this).attr("data-id"))});
 	},
 	save: function() {
 		console.log('save');
@@ -71,11 +72,11 @@ var Light = {
 		Light.disabledFields.forEach(function(disabledField) {
 			formEl.find("*[name="+ disabledField +"]").removeAttr('disabled')
 		})
-		var serializeArray = formEl.serializeArray();
 		// console.log(serializeArray)
-		var data = Light.toJson(serializeArray);
+		var data = Light.toJson(formEl);
+		console.log(data)
 		Light.disabledFields.forEach(function(disabledField) {
-			formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");	
+			formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");
 		})
 		// console.log(data);
 		// console.log(arguments)
