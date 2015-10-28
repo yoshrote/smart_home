@@ -1,9 +1,11 @@
 #TODO: Implement schedules
 import logging
 from phue import Group
+from home.rgb_cie import Converter as ColorConverter
 log = logging.getLogger(__name__)
 
 def _serialize_light(light):
+	color_helper = ColorConverter()
 	return {
 		'light_id': light.light_id,
 		'name': light.name,
@@ -13,10 +15,11 @@ def _serialize_light(light):
 		'hue': light.hue,
 		'saturation': light.saturation,
 		'xy': light.xy,
-		'colortemp': light.colortemp,
+		'colortemp_k': light.colortemp_k,
 		'effect': light.effect,
 		'alert': light.alert,
 		'transitiontime': light.transitiontime,
+		'color': '#'+color_helper.CIE1931ToHex(light.xy[0], light.xy[1], bri=light.brightness),
 	}
 
 def _serialize_group(group):
@@ -29,7 +32,7 @@ def _serialize_group(group):
 		'hue': group.hue,
 		'saturation': group.saturation,
 		'xy': group.xy,
-		'colortemp': group.colortemp,
+		'colortemp_k': group.colortemp_k,
 		'effect': group.effect,
 		'alert': group.alert,
 		'transitiontime': group.transitiontime,
@@ -75,7 +78,7 @@ def get_hue_groups(request):
 	return HueGroupResource(request.phillips_hue)
 
 class HueLightController(object):
-	const_fields = ['x', 'y', 'colormode', 'light_id', 'colortemp']
+	const_fields = ['x', 'y', 'colormode', 'light_id', 'colortemp_k']
 	def __init__(self, request):
 		self.request = request
 
@@ -94,9 +97,12 @@ class HueLightController(object):
 			# print field, value
 			if field == 'transitiontime' and value is None:
 				continue
-			elif field in HueLightController.const_fields:
+			elif field == 'color':
+				context.xy = ColorConverter().hexToCIE1931(value.replace('#',''))
 				continue
-			if field == 'alert' or getattr(context, field) != value:
+			elif field in self.const_fields:
+				continue
+			if field =='alert' or field in self.const_fields or getattr(context, field) != value:
 				setattr(context, field, value)
 
 class HueGroupController(object):

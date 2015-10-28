@@ -1,18 +1,22 @@
+var debug = function(msg){
+	//console.log(msg)
+}
+var info = function(msg){
+	console.log(msg)
+}
+
 
 var Light = {
-	disabledFields: ['x', 'y', 'colormode', 'light_id', 'colortemp'],
+	disabledFields: ['x', 'y', 'colormode', 'light_id', 'colortemp_k'],
 	load: function(context, lightId){
-		console.log('load')
-		// console.log(context)
-		// console.log(arguments)
+		info('load')
+		debug(context)
+		debug(arguments)
 		var formEl = $("#light-form");
 		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/lights/'+lightId, function(data){
-			// console.log('Light() ->' + JSON.stringify(data))
-			//$("#light-value").text(JSON.stringify(data, null, 4));
-			// console.log('lightId = '+lightId)
+			debug('Light('+lightId+') ->' + JSON.stringify(data))
 			formEl.find("*[name=light_id]").val(lightId);
-			// console.log(formEl.find("*[name=light_id]").val())
 			for(var field_name in data) {
 				if(field_name == "xy"){
 					formEl.find("*[name=x]").val(data[field_name][0]);
@@ -30,34 +34,39 @@ var Light = {
 	},
 	toJson: function(formEl){
 		var dataArray = formEl.serializeArray();
-		console.log('toJson');
-		// console.log(dataArray)
+		info('toJson');
+		debug(dataArray)
 		var data = new Object();
 		dataArray.forEach(function(field){
 			data[field.name] = field.value;
 		});
-		// console.log(data);
-		// console.log(arguments)
-		// data['colortemp'] = Number.parseInt(data['colortemp'])
+		debug(data);
+		debug(arguments)
+		// data['colortemp_k'] = Number.parseInt(data['colortemp_k'])
 		// data['x'] = Number.parseInt(data['x'])
 		// data['y'] = Number.parseInt(data['y'])
 		data['on'] = data['on'] == "true" ? true : false;
-		data['hue'] = Number.parseInt(data['hue'])
-		data['brightness'] = Number.parseInt(data['brightness'])
-		data['saturation'] = Number.parseInt(data['saturation'])
+		// data['hue'] = Number.parseInt(data['hue'])
+		// data['brightness'] = Number.parseInt(data['brightness'])
+		// data['saturation'] = Number.parseInt(data['saturation'])
 		data['transitiontime'] = data['transitiontime'] == "" ? null : Number.parseFloat(data['transitiontime']);
 
 		delete data['colormode']
-		delete data['colortemp']
+		// delete data['color']
+		delete data['colortemp_k']
 		delete data['x'];
 		delete data['y'];
+		delete data['hue']
+		delete data['brightness']
+		delete data['saturation']
+
 		return data;
 	},
 	renderList: function(data) {
 		$("#lights-list").html("");
-		console.log('renderList')
-		// console.log(data)
-		// console.log(arguments)
+		info('renderList')
+		debug(data)
+		debug(arguments)
 		data.forEach(function(object){
 			var light = $("<li>");
 			light.attr('data-id', object[0])
@@ -67,19 +76,17 @@ var Light = {
 		$("#lights-list li").on("click", function(){Light.load(this, $(this).attr("data-id"))});
 	},
 	save: function() {
-		console.log('save');
+		info('save');
 		var formEl = $("#light-form")
 		Light.disabledFields.forEach(function(disabledField) {
 			formEl.find("*[name="+ disabledField +"]").removeAttr('disabled')
 		})
-		// console.log(serializeArray)
 		var data = Light.toJson(formEl);
-		console.log(data)
 		Light.disabledFields.forEach(function(disabledField) {
 			formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");
 		})
-		// console.log(data);
-		// console.log(arguments)
+		debug(data);
+		debug(arguments)
 		var light_id = data['light_id'];
 		$.ajax({
 			type: "POST",
@@ -88,7 +95,8 @@ var Light = {
 			async: false,
 			data: JSON.stringify(data),
 			success: function () {
-				console.log("update complete");
+				info("update complete");
+				getMenu();
 			}
 		});
 		return false;
