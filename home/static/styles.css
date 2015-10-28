@@ -33,7 +33,16 @@
 #group-value {
 	display: inline-block;
 	vertical-align: top;
-	overflow: scroll;
 	width: 500px;
-	height: 150px;
+}
+#group-value div{
+	width: 500px;
+}
+#group-value label{
+	display: inline-block;
+	width: 200px;
+}
+#group-value input{
+	display: inline-block;
+	width: 200px;
 }

@@ -7,7 +7,7 @@ var info = function(msg){
 
 
 var Light = {
-	disabledFields: ['x', 'y', 'colormode', 'light_id', 'colortemp_k'],
+	disabledFields: ['light_id'],
 	load: function(context, lightId){
 		info('load')
 		debug(context)
@@ -18,10 +18,7 @@ var Light = {
 			debug('Light('+lightId+') ->' + JSON.stringify(data))
 			formEl.find("*[name=light_id]").val(lightId);
 			for(var field_name in data) {
-				if(field_name == "xy"){
-					formEl.find("*[name=x]").val(data[field_name][0]);
-					formEl.find("*[name=y]").val(data[field_name][1]);
-				} else if(field_name == "on"){
+				if(field_name == "on"){
 					formEl.find("*[name=on]").val(data[field_name].toString());
 				} else {
 					formEl.find("*[name="+field_name+"]").val(data[field_name]);
@@ -42,24 +39,8 @@ var Light = {
 		});
 		debug(data);
 		debug(arguments)
-		// data['colortemp_k'] = Number.parseInt(data['colortemp_k'])
-		// data['x'] = Number.parseInt(data['x'])
-		// data['y'] = Number.parseInt(data['y'])
 		data['on'] = data['on'] == "true" ? true : false;
-		// data['hue'] = Number.parseInt(data['hue'])
-		// data['brightness'] = Number.parseInt(data['brightness'])
-		// data['saturation'] = Number.parseInt(data['saturation'])
 		data['transitiontime'] = data['transitiontime'] == "" ? null : Number.parseFloat(data['transitiontime']);
-
-		delete data['colormode']
-		// delete data['color']
-		delete data['colortemp_k']
-		delete data['x'];
-		delete data['y'];
-		delete data['hue']
-		delete data['brightness']
-		delete data['saturation']
-
 		return data;
 	},
 	renderList: function(data) {
@@ -104,10 +85,41 @@ var Light = {
 }
 
 var Group = {
-	load: function(){
+	disabledFields: ['group_id'],
+	load: function(context, groupId){
+		info('load')
+		debug(context)
+		debug(arguments)
+		var formEl = $("#group-form");
+		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/groups/'+$(this).attr("data-id"), function(data){
-			$("#group-value").text(JSON.stringify(data, null, 4));
+			debug('Group('+groupId+') ->' + JSON.stringify(data))
+			formEl.find("*[name=group_id]").val(groupId);
+			for(var field_name in data) {
+				if(field_name == "on"){
+					formEl.find("*[name=on]").val(data[field_name].toString());
+				} else {
+					formEl.find("*[name="+field_name+"]").val(data[field_name]);
+				}
+			}
+			Group.disabledFields.forEach(function(disabledField) {
+				formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");	
+			})
 		});
+	},
+	toJson: function(formEl){
+		var dataArray = formEl.serializeArray();
+		info('toJson');
+		debug(dataArray)
+		var data = new Object();
+		dataArray.forEach(function(field){
+			data[field.name] = field.value;
+		});
+		debug(data);
+		debug(arguments)
+		data['on'] = data['on'] == "true" ? true : false;
+		data['transitiontime'] = data['transitiontime'] == "" ? null : Number.parseFloat(data['transitiontime']);
+		return data;
 	},
 	renderList: function(data){
 		$("#groups-list").html("");
@@ -120,7 +132,32 @@ var Group = {
 		});
 		$("#groups-list li").on("click", Group.load);
 	},
-	save: function(){}
+	save: function() {
+		info('save');
+		var formEl = $("#group-form")
+		Group.disabledFields.forEach(function(disabledField) {
+			formEl.find("*[name="+ disabledField +"]").removeAttr('disabled')
+		})
+		var data = Group.toJson(formEl);
+		Group.disabledFields.forEach(function(disabledField) {
+			formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");
+		})
+		debug(data);
+		debug(arguments)
+		var group_id = data['group_id'];
+		$.ajax({
+			type: "POST",
+			url: '/hue/groups/'+group_id,
+			dataType: 'json',
+			async: false,
+			data: JSON.stringify(data),
+			success: function () {
+				info("update complete");
+				getMenu();
+			}
+		});
+		return false;
+	}
 }
 
 var getMenu = function(){

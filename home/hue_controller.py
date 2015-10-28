@@ -106,6 +106,7 @@ class HueLightController(object):
 				setattr(context, field, value)
 
 class HueGroupController(object):
+	const_fields = ['x', 'y', 'colormode', 'group_id', 'colortemp_k', 'lights']
 	def __init__(self, request):
 		self.request = request
 
@@ -119,7 +120,16 @@ class HueGroupController(object):
 		context = self.request.context
 		group_data = self.request.json_body
 		for field, value in group_data.iteritems():
-			setattr(context, field, value)
+			# print field, value
+			if field == 'transitiontime' and value is None:
+				continue
+			elif field == 'color':
+				context.xy = ColorConverter().hexToCIE1931(value.replace('#',''))
+				continue
+			elif field in self.const_fields:
+				continue
+			if field =='alert' or field in self.const_fields or getattr(context, field) != value:
+				setattr(context, field, value)
 
 def includeme(config):
 	from phue import Bridge
