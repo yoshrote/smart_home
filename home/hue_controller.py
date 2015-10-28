@@ -52,7 +52,7 @@ class HueLightResource(object):
 		return self.lights[hue_id]
 
 	def all(self):
-		return [(l.light_id, l.name) for l in self.lights.lights]
+		return [{'id':l.light_id, 'name':l.name} for l in self.lights.lights]
 
 class HueGroupResource(object):
 	def __init__(self, lights):

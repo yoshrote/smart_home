@@ -1,13 +1,10 @@
-var debug = function(msg){
-	//console.log(msg)
-}
-var info = function(msg){
-	console.log(msg)
-}
+var debug = function(msg){}
+//var debug = console.log(msg)
+var info = console.log
 
 var HueTemplate = {
 	form: function(type, idField){
-		var el = $("<div>")
+		var el = $("<form>")
 		el.html(' \
 			<div> \
 				<label for="'+idField+'">'+idField+'</label> \
@@ -48,22 +45,35 @@ var HueTemplate = {
 			</div> \
 		')
 		el.addClass(type+'-value')
+		el.addClass(type+'-form')
 		return el
 	},
-	container: function(type, idField){
-		var el = $("<div>")
-		el.html(' \
-			<div>'+type+'</div> \
-			<ul class="'+type+'-list"></ul> \
-			<form class="'+type+'-form"></form> \
-		')
-		el.addClass(type+'-container')
-		if (idField !== null) {
-			el.attr('id', idField)
-		}
-		return el
+	list: function(type){
+		var el = $('<ul>')
+		el.addClass(type+'-list')
+		return el;
 	}
 }
+
+var LightMenuItem = React.createClass({
+	render: function() {
+		return (
+		 '<li data-id="{this.props.data.id}">{this.props.data.name}</li>'
+		);
+	}
+})
+
+var LightMenu = React.createClass({
+  	render: function() {
+		return (
+			'<ul>'+
+	        '{this.props.results.map(function(result) {'+
+    	    '  return <LightMenuItem data={result}/>;'+
+        	'})}'+
+			'</ul>'
+		);
+	}
+})
 
 var Light = {
 	disabledFields: ['light_id'],
@@ -71,23 +81,28 @@ var Light = {
 		info('Light.load')
 		debug(arguments)
 		debug(options)
-		var formEl = $(options.form);
-		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/lights/'+lightId, function(data){
-			debug('Light('+lightId+') ->' + JSON.stringify(data))
-			formEl.html(HueTemplate.form('lights', 'light_id'))
-			formEl.find("*[name=light_id]").val(lightId);
-			for(var field_name in data) {
-				if(field_name == "on"){
-					formEl.find("*[name=on]").val(data[field_name].toString());
-				} else {
-					formEl.find("*[name="+field_name+"]").val(data[field_name]);
-				}
-			}
-			Light.disabledFields.forEach(function(disabledField) {
-				formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");
-			})
+			Light.buildForm(lightId, data, options)
 		});
+	},
+	buildForm: function(lightId, data, options){
+		info('Light.buildForm')
+		debug('Light('+lightId+') ->' + JSON.stringify(data))
+		var formEl = $(options.form);
+		formEl.html(HueTemplate.form('lights', 'light_id'))
+		formEl.find("*[name=light_id]").val(lightId);
+		for(var field_name in data) {
+			if(field_name == "on"){
+				formEl.find("*[name=on]").val(data[field_name].toString());
+			} else {
+				formEl.find("*[name="+field_name+"]").val(data[field_name]);
+			}
+		}
+		Light.disabledFields.forEach(function(disabledField) {
+			formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");
+		})
+		formEl.find("*[name=alert]").removeAttr("checked")
+		formEl.submit(function(){Light.save(options)});
 	},
 	toJson: function(formEl){
 		info('Light.toJson');
@@ -106,21 +121,29 @@ var Light = {
 	renderList: function(options) {
 		info('Light.renderList')
 		$.getJSON('/hue/lights', function(data){
-			debug(data)
-			debug(arguments)
-			debug(options)
-			$(options.list).html("");
-			data.forEach(function(object){
-				var light = $("<li>");
-				light.attr('data-id', object[0])
-				light.html(object[1]);
-				$(options.list).append(light);
-			});
-			$(options.list + " li").on("click", function(){Light.load(
-				$(this).attr("data-id"),
-				options
-			)});
+			ReactDOM.render(
+			  '<LightMenu results="{data}" />',
+			  document.getElementById('hue-menu')
+			);
+			// Light.buildList(data, options)
 		});
+	},
+	buildList: function(data, options){
+		info('Light.buildList')
+		debug(data)
+		debug(arguments)
+		debug(options)
+		$(options.list).html("");
+		data.forEach(function(object){
+			var light = $("<li>");
+			light.attr('data-id', object[0])
+			light.html(object[1]);
+			$(options.list).append(light);
+		});
+		$(options.list + " li").on("click", function(){Light.load(
+			$(this).attr("data-id"),
+			options
+		)});
 	},
 	save: function(options) {
 		info('Light.save');
@@ -157,23 +180,34 @@ var Group = {
 		info('Group.load')
 		debug(arguments)
 		debug(options)
-		var formEl = $(options.form);
-		formEl.find("*[name=alert]").removeAttr("checked")
 		$.getJSON('/hue/groups/'+groupId, function(data){
-			debug('Group('+groupId+') ->' + JSON.stringify(data))
-			formEl.html(HueTemplate.form('groups', 'group_id'))
-			formEl.find("*[name=group_id]").val(groupId);
-			for(var field_name in data) {
-				if(field_name == "on"){
-					formEl.find("*[name=on]").val(data[field_name].toString());
-				} else {
-					formEl.find("*[name="+field_name+"]").val(data[field_name]);
-				}
-			}
-			Group.disabledFields.forEach(function(disabledField) {
-				formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");	
-			})
+			Group.buildForm(groupId, data, options)
 		});
+	},
+	buildForm: function(groupId, data, options){
+		info('Group.buildForm')
+		debug('Group('+groupId+') ->' + JSON.stringify(data))
+		var formEl = $(options.form);
+		formEl.html(HueTemplate.form('groups', 'group_id'))
+		formEl.find("*[name=group_id]").val(groupId);
+		for(var field_name in data) {
+			if(field_name == "on"){
+				formEl.find("*[name=on]").val(data[field_name].toString());
+			} else {
+				formEl.find("*[name="+field_name+"]").val(data[field_name]);
+			}
+		}
+		Group.disabledFields.forEach(function(disabledField) {
+			formEl.find("*[name="+ disabledField +"]").attr('disabled', "disabled");
+		})
+		formEl.find("*[name=alert]").removeAttr("checked")
+		formEl.on('submit', function(){Group.save(options)});
+		var lightForm;
+		data.lights.forEach(function(light){
+			lightForm = $("<div>")
+			Light.buildForm(light.light_id, light, {form: lightForm})
+			formEl.parent().append(lightForm)
+		})
 	},
 	toJson: function(formEl){
 		var dataArray = formEl.serializeArray();
@@ -192,22 +226,26 @@ var Group = {
 	renderList: function(options){
 		info('Group.renderList')
 		$.getJSON('/hue/groups', function(data){
-			debug(data)
-			debug(arguments)
-			debug(options)
-			$(options.list).html("");
-			data.forEach(function(object){
-				var group = $("<li>");
-				group.attr('data-id', object[0])
-				group.html(object[1]);
-				$(options.list).append(group);
-
-			});
-			$(options.list + " li").on("click", function(){Group.load(
-				$(this).attr("data-id"),
-				options
-			)});
+			Group.buildList(data, options)
 		})
+	},
+	buildList: function(data, options){
+		info('Group.buildList')
+		debug(data)
+		debug(arguments)
+		debug(options)
+		$(options.list).html("");
+		data.forEach(function(object){
+			var group = $("<li>");
+			group.attr('data-id', object[0])
+			group.html(object[1]);
+			$(options.list).append(group);
+
+		});
+		$(options.list + " li").on("click", function(){Group.load(
+			$(this).attr("data-id"),
+			options
+		)});
 	},
 	save: function(options) {
 		info('Group.save');
@@ -240,10 +278,11 @@ var Group = {
 
 $(document).ready(function(){
 	var options = {
-		lights: {list: ".lights-list", form: ".lights-form", fields: ".lights-value"},
-		groups: {list: ".groups-list", form: ".groups-form", fields: ".groups-value"},
+		lights: {list: ".lights-list", form: ".lights-form"},
+		groups: {list: ".groups-list", form: ".groups-form"},
 		controlArea: "#hue-control",
-		menuItems: "a.menu-control"
+		menuItems: "a.menu-control",
+		menuArea: "#hue-menu"
 	}
 	var classes = {
 		lights: Light,
@@ -253,9 +292,11 @@ $(document).ready(function(){
 	$(options.menuItems).on('click', function(){
 		info('menu control')
 		var menuType = $(this).attr('data-type');
-		info(menuType)
-		$(options.controlArea).html(HueTemplate.container(menuType));
-		$(options[menuType].form).on('submit', function(){classes[menuType].save(options[menuType])});
-		classes[menuType].renderList(options[menuType])
+		//info(menuType)
+		// classes[menuType].renderList(options[menuType])
+		$(options.menuArea).html("");
+		$(options.menuArea).append(HueTemplate.list(menuType));
+		// $(options.controlArea).append(HueTemplate.form(menuType));
+		//$(options[menuType].form).on('submit', function(){classes[menuType].save(options[menuType])});
 	})
 });
