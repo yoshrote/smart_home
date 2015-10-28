@@ -1,5 +1,7 @@
 #TODO: Implement schedules
+import logging
 from phue import Group
+log = logging.getLogger(__name__)
 
 def _serialize_light(light):
 	return {
@@ -73,7 +75,7 @@ def get_hue_groups(request):
 	return HueGroupResource(request.phillips_hue)
 
 class HueLightController(object):
-
+	const_fields = ['x', 'y', 'colormode', 'light_id', 'colortemp']
 	def __init__(self, request):
 		self.request = request
 
@@ -86,12 +88,16 @@ class HueLightController(object):
 	def set_light(self):
 		context = self.request.context
 		light_data = self.request.json_body
-		print context
-		print light_data
+		# print context
+		# print light_data
 		for field, value in light_data.iteritems():
+			# print field, value
 			if field == 'transitiontime' and value is None:
 				continue
-			setattr(context, field, value)
+			elif field in HueLightController.const_fields:
+				continue
+			if field == 'alert' or getattr(context, field) != value:
+				setattr(context, field, value)
 
 class HueGroupController(object):
 	def __init__(self, request):
