@@ -65,9 +65,8 @@ var HueTemplate = {
 
 var Light = {
 	disabledFields: ['light_id'],
-	load: function(context, lightId, options){
+	load: function(lightId, options){
 		info('Light.load')
-		debug(context)
 		debug(arguments)
 		debug(options)
 		var formEl = $(options.form);
@@ -116,7 +115,6 @@ var Light = {
 				$(options.list).append(light);
 			});
 			$(options.list + " li").on("click", function(){Light.load(
-				this,
 				$(this).attr("data-id"),
 				options
 			)});
@@ -153,9 +151,8 @@ var Light = {
 
 var Group = {
 	disabledFields: ['group_id'],
-	load: function(context, groupId, options){
+	load: function(groupId, options){
 		info('Group.load')
-		debug(context)
 		debug(arguments)
 		debug(options)
 		var formEl = $(options.form);
@@ -205,7 +202,6 @@ var Group = {
 
 			});
 			$(options.list + " li").on("click", function(){Group.load(
-				this,
 				$(this).attr("data-id"),
 				options
 			)});
