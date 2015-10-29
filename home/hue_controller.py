@@ -17,7 +17,7 @@ def _serialize_light(light):
 		'xy': light.xy,
 		'colortemp_k': light.colortemp_k,
 		'effect': light.effect,
-		'alert': light.alert,
+		'alert': None,
 		'transitiontime': light.transitiontime,
 		'color': '#'+color_helper.CIE1931ToHex(light.xy[0], light.xy[1], bri=light.brightness),
 	}
@@ -34,7 +34,7 @@ def _serialize_group(group):
 		'xy': group.xy,
 		'colortemp_k': group.colortemp_k,
 		'effect': group.effect,
-		'alert': group.alert,
+		'alert': None,
 		'transitiontime': group.transitiontime,
 		'lights': [_serialize_light(l) for l in group.lights]
 	}
@@ -68,7 +68,7 @@ class HueGroupResource(object):
 		all_groups = []
 		for group in self.lights.get_group():
 			g = Group(self.lights, group)
-			all_groups.append((g.group_id, g.name))
+			all_groups.append({'id':g.group_id, 'name': g.name})
 		return all_groups
 
 def get_hue_lights(request):
@@ -78,7 +78,6 @@ def get_hue_groups(request):
 	return HueGroupResource(request.phillips_hue)
 
 class HueLightController(object):
-	const_fields = ['x', 'y', 'colormode', 'light_id', 'colortemp_k']
 	def __init__(self, request):
 		self.request = request
 
@@ -88,21 +87,22 @@ class HueLightController(object):
 	def get_light(self):
 		return _serialize_light(self.request.context)
 
+	def _cleanup_response(self, light_data):
+		light_data['on'] = False if light_data['on'] == 'false' else True
+		light_data['xy'] = ColorConverter().hexToCIE1931(light_data.pop('color').replace('#',''))
+		light_data.pop('light_id')
+		if not light_data['transitiontime']:
+			light_data.pop('transitiontime')
+		if light_data['alert'] != 'select':
+			light_data.pop('alert')
+		return light_data
+
 	def set_light(self):
 		context = self.request.context
-		light_data = self.request.json_body
-		# print context
-		# print light_data
+		light_data = self._cleanup_response(self.request.json_body)
+
 		for field, value in light_data.iteritems():
-			# print field, value
-			if field == 'transitiontime' and value is None:
-				continue
-			elif field == 'color':
-				context.xy = ColorConverter().hexToCIE1931(value.replace('#',''))
-				continue
-			elif field in self.const_fields:
-				continue
-			if field =='alert' or field in self.const_fields or getattr(context, field) != value:
+			if (field, value) == ('alert', 'select') or getattr(context, field) != value:
 				setattr(context, field, value)
 
 class HueGroupController(object):

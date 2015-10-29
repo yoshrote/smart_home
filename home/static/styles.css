@@ -1,58 +1,56 @@
-.lights-container{
-	width: 800px;
+#hue-menu{
+	width: 1500px;
+	display: block;
 }
-.groups-container{
-	width: 800px;
+#hue-control{
+	width: 1500px;
+	display: block;
 }
-
+.group-lights {
+	display: block;
+}
 .lights-list {
-	display: inline-block;
 	vertical-align: top;
 	width: 200px;
 }
 .groups-list {
-	display: inline-block;
 	vertical-align: top;
-	width: 200px;
-}
-.lights-form {
-	display: inline-block;
 	width: 200px;
 }
 .groups-form {
 	display: inline-block;
 	width: 200px;
 }
-.lights-value {
+.lights-form {
 	display: inline-block;
 	vertical-align: top;
 	width: 500px;
 }
-.lights-value div{
+.lights-form div{
 	width: 500px;
 }
-.lights-value label{
+.lights-form label{
 	display: inline-block;
 	width: 200px;
 }
-.lights-value input, .lights-value select{
+.lights-form input, .lights-form select{
 	display: inline-block;
 	width: 200px;
 }
 
-.groups-value {
+.groups-form {
 	display: inline-block;
 	vertical-align: top;
 	width: 500px;
 }
-.groups-value div{
+.groups-form div{
 	width: 500px;
 }
-.groups-value label{
+.groups-form label{
 	display: inline-block;
 	width: 200px;
 }
-.groups-value input, .groups-value select{
+.groups-form input, .groups-form select{
 	display: inline-block;
 	width: 200px;
 }
