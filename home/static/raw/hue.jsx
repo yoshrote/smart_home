@@ -8,13 +8,15 @@ var LightForm = React.createClass({
 		return {};
 	},
 	componentDidMount: function() {
-		var that = this;
-		$.getJSON('/hue/lights/'+this.props.light_id, function(data){
-			if(that.isMounted()){
-				data.alert = null;
-				that.setState(data)
-			}
-		});
+		if(this.props.loadUrl !== undefined){
+			var that = this;
+			$.getJSON('/hue/lights/'+this.props.light_id, function(data){
+				if(that.isMounted()){
+					data.alert = null;
+					that.setState(data)
+				}
+			});
+		}
 	},
 	handleChange: function(event) {
 		var fieldChange = new Object();
@@ -36,7 +38,7 @@ var LightForm = React.createClass({
 		}
 		$.ajax({
 			type: "POST",
-			url: '/hue/lights/'+this.props.light_id,
+			url: this.props.saveUrl,
 			dataType: 'json',
 			async: false,
 			data: JSON.stringify(this.state),
@@ -47,7 +49,7 @@ var LightForm = React.createClass({
 		});
 		return false;
 	},
-  	render: function() {
+	render: function() {
 		return (
 			<form className="lights-form" onSubmit={this.saveForm}>
 				<div>
@@ -95,7 +97,7 @@ var LightForm = React.createClass({
 var LightMenuItem = React.createClass({
 	handleClick: function(i) {
 		ReactDOM.render(
-		  <LightForm key={this.props.data.id} light_id={this.props.data.id} options={this.props.options}/>,
+		  <LightForm key={this.props.data.id} loadUrl={'/hue/lights/'+this.props.data.id} saveUrl={'/hue/lights/'+this.props.data.id} light_id={this.props.data.id} options={this.props.options}/>,
 		  document.getElementById('hue-control')
 		);
 	},
@@ -124,13 +126,15 @@ var GroupForm = React.createClass({
 		return {lights:[]};
 	},
 	componentDidMount: function() {
-		var that = this;
-		$.getJSON('/hue/groups/'+this.props.group_id, function(data){
-			if(that.isMounted()){
-				data.alert = null;
-				that.setState(data)
-			}
-		});
+		if(this.props.loadUrl !== undefined){
+			var that = this;
+			$.getJSON(this.props.loadUrl, function(data){
+				if(that.isMounted()){
+					data.alert = null;
+					that.setState(data)
+				}
+			});
+		}
 	},
 	handleChange: function(event) {
 		var fieldChange = new Object();
@@ -152,7 +156,7 @@ var GroupForm = React.createClass({
 		}
 		$.ajax({
 			type: "POST",
-			url: '/hue/groups/'+this.props.group_id,
+			url: this.props.saveUrl,
 			dataType: 'json',
 			async: false,
 			data: JSON.stringify(this.state),
@@ -208,7 +212,7 @@ var GroupForm = React.createClass({
 				</form>
 				<div className="group-lights">
 				{this.state.lights.map(function(result) {
-					return <LightForm key={result.light_id} light_id={result.light_id} options={that.props.options}/>;
+					return <LightForm key={result.light_id} loadUrl={'/hue/lights/'+result.light_id} saveUrl={'/hue/lights/'+result.light_id} light_id={result.light_id} options={that.props.options}/>;
 				})}
 				</div>
 			</div>
@@ -219,7 +223,7 @@ var GroupForm = React.createClass({
 var GroupMenuItem = React.createClass({
 	handleClick: function(i) {
 		ReactDOM.render(
-		  <GroupForm group_id={this.props.data.id} options={this.props.options}/>,
+		  <GroupForm group_id={this.props.data.id} loadUrl={'/hue/groups/'+this.props.data.id} saveUrl={'/hue/groups/'+this.props.data.id} options={this.props.options}/>,
 		  document.getElementById('hue-control')
 		);
 	},
