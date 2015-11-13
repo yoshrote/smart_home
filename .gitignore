@@ -1,4 +1,4 @@
 *.pyc
 production.ini
 *.egg-info
-
+home/static/dest/*
