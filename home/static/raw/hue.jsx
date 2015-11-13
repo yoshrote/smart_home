@@ -118,6 +118,14 @@ var LightMenu = React.createClass({
         	})}
 			</ul>
 		);
+	},
+	fromUrl: function(url, node, options) {
+		$.getJSON(url, function(data){
+			ReactDOM.render(
+			  <LightMenu results={data} options={options}/>,
+			  node
+			);
+		})
 	}
 })
 
@@ -244,25 +252,25 @@ var GroupMenu = React.createClass({
         	})}
 			</ul>
 		);
+	},
+	fromUrl: function(url, node, options) {
+		$.getJSON(url, function(data){
+			ReactDOM.render(
+			  <GroupMenu results={data} options={options}/>,
+			  node
+			);
+		})
 	}
 })
 
 var renderMenu = {
 	lights: function(options){
-		$.getJSON('/hue/lights', function(data){
-			ReactDOM.render(
-			  <LightMenu results={data} options={options}/>,
-			  document.getElementById('hue-menu')
-			);
-		})
+		var menu = new LightMenu()
+		menu.fromUrl('/hue/lights', document.getElementById('hue-menu'), options)
 	},
 	groups: function(options){
-		$.getJSON('/hue/groups', function(data){
-			ReactDOM.render(
-			  <GroupMenu results={data} options={options}/>,
-			  document.getElementById('hue-menu')
-			);
-		})
+		var menu = new GroupMenu()
+		menu.fromUrl('/hue/groups', document.getElementById('hue-menu'), options)
 	}
 }
 
