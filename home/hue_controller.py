@@ -1,7 +1,8 @@
-#TODO: Implement schedules
 import logging
 from phue import Group
 from home.rgb_cie import Converter as ColorConverter
+from valid_model import Object
+from valid_model.descriptors import Integer, String, Float, Bool as Boolean, List, EmbeddedObject
 log = logging.getLogger(__name__)
 
 def _serialize_light(light):
@@ -39,6 +40,207 @@ def _serialize_group(group):
 		'lights': [_serialize_light(l) for l in group.lights]
 	}
 
+class HueScenario(Object):
+	scene_id = Integer(nullable=False)
+	name = String(nullable=False)
+
+class HueLight(Object):
+	light_id = Integer(nullable=False)
+	scene_id = Integer(nullable=False, default=0)
+	name = String(nullable=False)
+	on = Boolean(nullable=False)
+	xy = List(value=Float(nullable=False))
+	brightness = Float(nullable=False)
+	effect = String()
+	alert = String()
+	transitiontime = Integer()
+
+	@classmethod
+	def from_api(cls, light):
+		instance = cls(
+			light_id=light.light_id,
+			name=light.name,
+			on=light.on,
+			xy=light.xy,
+			brightness=light.brightness,
+			effect=light.effect,
+			alert=light.alert,
+			transitiontime=light.transitiontime,
+		)
+		return instance
+
+	@classmethod
+	def from_json(cls, json_body):
+		return cls(
+			group_id=json_body['light_id'],
+			name=json_body['name'],
+			on=json_body['on'],
+			xy=json_body['xy'],
+			brightness=json_body['brightness'],
+			effect=json_body['effect'],
+			alert=json_body['alert'],
+			transitiontime=json_body['transitiontime']
+		)
+
+	@property
+	def color(self):
+		color_helper = ColorConverter()
+		return color_helper.CIE1931ToHex(self.xy[0], self.xy[1], bri=self.brightness)
+
+	def save(self, conn):
+		self.validate()
+		cursor = conn.cursor()
+		cursor.execute("""
+			INSERT OR REPLACE INTO lights
+			(light_id, name, on, xy, brightness, effect, alert, transitiontime)
+			VALUES
+			(?, ?, ?, ?, ?, ?, ?, ?)
+			""",
+			self.light_id, self.name, self.on, self.xy, self.brightness,
+			self.effect, self.alert, self.transitiontime
+		)
+
+	@classmethod
+	def load(cls, conn, light_id):
+		cursor = conn.cursor()
+		cursor.execute("SELECT * FROM lights WHERE light_id=?", light_id)
+		light = cursor.fetchone()
+		if light is None:
+			return None
+		else:
+			return cls(
+				light_id=cursor['light_id'],
+				name=cursor['name'],
+				on=cursor['on'],
+				xy=cursor['xy'],
+				brightness=cursor['brightness'],
+				effect=cursor['effect'],
+				alert=cursor['alert'],
+				transitiontime=cursor['transitiontime']
+			)
+
+	def create_tables(self, conn):
+		conn.execute("""
+			CREATE TABLE lights (
+				light_id INTEGER PRIMARY KEY,
+				name TEXT,
+				on BOOL,
+				x REAL,
+				y REAL,
+				brightness REAL,
+				effect TEXT,
+				alert TEXT,
+				transitiontime INTEGER
+			)
+		""")
+
+class HueGroup(Object):
+	group_id = Integer(nullable=False)
+	scene_id = Integer(nullable=False, default=0)
+	name = String(nullable=False)
+	on = Boolean(nullable=False)
+	xy = List(value=Float(nullable=False))
+	brightness = Float(nullable=False)
+	effect = String()
+	alert = String()
+	transitiontime = Integer()
+	lights = List(value=EmbeddedObject(HueLight()))
+
+	@property
+	def color(self):
+		color_helper = ColorConverter()
+		return color_helper.CIE1931ToHex(self.xy[0], self.xy[1], bri=self.brightness)
+
+	def save(self, conn):
+		self.validate()
+		cursor = conn.cursor()
+		cursor.execute("""
+			INSERT OR REPLACE INTO groups
+			(group_id, name, on, xy, brightness, effect, alert, transitiontime)
+			VALUES
+			(?, ?, ?, ?, ?, ?, ?, ?)
+			""",
+			self.group_id, self.name, self.on, self.xy, self.brightness,
+			self.effect, self.alert, self.transitiontime
+		)
+
+	@classmethod
+	def from_api(cls, group):
+		instance = cls(
+			group_id=group.group_id,
+			name=group.name,
+			on=group.on,
+			xy=group.xy,
+			brightness=group.brightness,
+			effect=group.effect,
+			alert=group.alert,
+			transitiontime=group.transitiontime,
+			lights=[HueLight.from_api(l) for l in group.lights]
+		)
+		return instance
+
+	@classmethod
+	def load(cls, conn, group_id):
+		cursor = conn.cursor()
+		cursor.execute("SELECT * FROM groups WHERE group_id=?", group_id)
+		light = cursor.fetchone()
+		if light is None:
+			return None
+		else:
+			return cls(
+				group_id=cursor['group_id'],
+				name=cursor['name'],
+				on=cursor['on'],
+				xy=cursor['xy'],
+				brightness=cursor['brightness'],
+				effect=cursor['effect'],
+				alert=cursor['alert'],
+				transitiontime=cursor['transitiontime']
+			)
+
+	@classmethod
+	def from_json(cls, json_body):
+		return cls(
+			group_id=json_body['group_id'],
+			name=json_body['name'],
+			on=json_body['on'],
+			xy=json_body['xy'],
+			brightness=json_body['brightness'],
+			effect=json_body['effect'],
+			alert=json_body['alert'],
+			transitiontime=json_body['transitiontime']
+		)
+
+	def create_tables(self, conn):
+		conn.execute("""
+			CREATE TABLE groups (
+				group_id INTEGER PRIMARY KEY,
+				name TEXT,
+				on BOOL,
+				x REAL,
+				y REAL,
+				brightness REAL,
+				effect TEXT,
+				alert TEXT,
+				transitiontime INTEGER
+			)
+		""")
+
+class HueSceneResource(object):
+	def __init__(self, conn):
+		self.conn = conn
+
+	def __getitem__(self, value):
+		try:
+			scene_id = int(value)
+		except (TypeError, ValueError):
+			scene_id = value
+
+		return HueScenario.load(self.conn, scene_id)
+
+	def all(self):
+		return [{'id':l.scene_id, 'name':l.name} for l in HueScenario.load_all(self.conn)]
+
 class HueLightResource(object):
 	def __init__(self, lights):
 		self.lights = lights
@@ -49,7 +251,7 @@ class HueLightResource(object):
 		except (TypeError, ValueError):
 			hue_id = value
 
-		return self.lights[hue_id]
+		return HueLight.from_api(self.lights[hue_id])
 
 	def all(self):
 		return [{'id':l.light_id, 'name':l.name} for l in self.lights.lights]
@@ -60,7 +262,7 @@ class HueGroupResource(object):
 
 	def __getitem__(self, value):
 		try:
-			return Group(self.lights, value)
+			return HueGroup.from_api(Group(self.lights, value))
 		except LookupError:
 			raise KeyError(value)
 
@@ -76,6 +278,9 @@ def get_hue_lights(request):
 
 def get_hue_groups(request):
 	return HueGroupResource(request.phillips_hue)
+
+def get_hue_scenes(request):
+	return HueSceneResource(request.hue_db)
 
 class HueLightController(object):
 	def __init__(self, request):
@@ -131,6 +336,22 @@ class HueGroupController(object):
 			if field =='alert' or field in self.const_fields or getattr(context, field) != value:
 				setattr(context, field, value)
 
+class HueSceneController(object):
+	def __init__(self, request):
+		self.request = request
+
+	def create(self):
+		pass
+
+	def update(self):
+		pass
+
+	def delete(self):
+		pass
+
+	def get(self):
+		pass
+
 def includeme(config):
 	from phue import Bridge
 	bridge_addr = config.registry.settings['phillips_hue_bridge']
@@ -143,10 +364,21 @@ def includeme(config):
 		property=True
 	)
 
+	import sqlite3
+	sqlite_addr = config.registry.settings.get('phillips_hue_db', ':memory:')
+	config.registry['phillips_hue_db'] = sqlite3.connect(sqlite_addr)
+	config.add_request_method(
+		lambda r: r.registry['phillips_hue_db'],
+		'hue_db',
+		property=True
+	)
+
 	config.add_route('lights_index', '/lights', factory=get_hue_lights)
 	config.add_route('lights', '/lights/*traverse', factory=get_hue_lights)
 	config.add_route('groups_index', '/groups', factory=get_hue_groups)
 	config.add_route('groups', '/groups/*traverse', factory=get_hue_groups)
+	config.add_route('scenes_index', '/scenes', factory=get_hue_scenes)
+	config.add_route('scenes', '/scenes/*traverse', factory=get_hue_scenes)
 
 	config.add_view(
 		route_name='lights_index',
