@@ -13,14 +13,14 @@ def _serialize_light(light):
 		'on': light.on,
 		'colormode': light.colormode,
 		'brightness': light.brightness,
-		'hue': light.hue,
-		'saturation': light.saturation,
 		'xy': light.xy,
-		'colortemp_k': light.colortemp_k,
 		'effect': light.effect,
 		'alert': None,
 		'transitiontime': light.transitiontime,
 		'color': '#'+color_helper.CIE1931ToHex(light.xy[0], light.xy[1], bri=light.brightness),
+		# 'hue': light.hue,
+		# 'saturation': light.saturation,
+		# 'colortemp_k': light.colortemp_k,
 	}
 
 def _serialize_group(group):
@@ -30,14 +30,14 @@ def _serialize_group(group):
 		'on': group.on,
 		'colormode': group.colormode,
 		'brightness': group.brightness,
-		'hue': group.hue,
-		'saturation': group.saturation,
 		'xy': group.xy,
-		'colortemp_k': group.colortemp_k,
 		'effect': group.effect,
 		'alert': None,
 		'transitiontime': group.transitiontime,
 		'lights': [_serialize_light(l) for l in group.lights]
+		# 'hue': group.hue,
+		# 'saturation': group.saturation,
+		# 'colortemp_k': group.colortemp_k,
 	}
 
 class HueScenario(Object):
@@ -52,8 +52,9 @@ class HueLight(Object):
 	xy = List(value=Float(nullable=False))
 	brightness = Float(nullable=False)
 	effect = String()
-	alert = String()
+	alert = Boolean(default=False)
 	transitiontime = Integer()
+	colormode = 'xy'
 
 	@classmethod
 	def from_api(cls, light):
@@ -64,7 +65,7 @@ class HueLight(Object):
 			xy=light.xy,
 			brightness=light.brightness,
 			effect=light.effect,
-			alert=light.alert,
+			alert=light.alert == 'select',
 			transitiontime=light.transitiontime,
 		)
 		return instance
@@ -97,7 +98,7 @@ class HueLight(Object):
 			(?, ?, ?, ?, ?, ?, ?, ?)
 			""",
 			self.light_id, self.name, self.on, self.xy, self.brightness,
-			self.effect, self.alert, self.transitiontime
+			self.effect, 'select' if self.alert else None, self.transitiontime
 		)
 
 	@classmethod
@@ -115,7 +116,7 @@ class HueLight(Object):
 				xy=cursor['xy'],
 				brightness=cursor['brightness'],
 				effect=cursor['effect'],
-				alert=cursor['alert'],
+				alert=cursor['alert'] == 'select',
 				transitiontime=cursor['transitiontime']
 			)
 
@@ -251,9 +252,21 @@ class HueLightResource(object):
 		except (TypeError, ValueError):
 			hue_id = value
 
+		return HueLight(
+			light_id=hue_id,
+			scene_id=0,
+			name='top',
+			on=True,
+			xy=[1.2, 0.6],
+			brightness=55.6,
+			effect='colorloop',
+			alert=False,
+			transitiontime=None
+		)
 		return HueLight.from_api(self.lights[hue_id])
 
 	def all(self):
+		return [{'id':1, 'name': 'left'}, {'id':2, 'name': 'right'}]
 		return [{'id':l.light_id, 'name':l.name} for l in self.lights.lights]
 
 class HueGroupResource(object):
@@ -293,19 +306,22 @@ class HueLightController(object):
 		return _serialize_light(self.request.context)
 
 	def _cleanup_response(self, light_data):
-		light_data['on'] = False if light_data['on'] == 'false' else True
+		light_data['on'] = light_data['on']
 		light_data['xy'] = ColorConverter().hexToCIE1931(light_data.pop('color').replace('#',''))
 		light_data.pop('light_id')
 		if not light_data['transitiontime']:
 			light_data.pop('transitiontime')
-		if light_data['alert'] != 'select':
+		if light_data['alert'] == True:
+			light_data['alert'] = 'select'
+		else:
 			light_data.pop('alert')
 		return light_data
 
 	def set_light(self):
 		context = self.request.context
 		light_data = self._cleanup_response(self.request.json_body)
-
+		print light_data
+		return
 		for field, value in light_data.iteritems():
 			if (field, value) == ('alert', 'select') or getattr(context, field) != value:
 				setattr(context, field, value)
@@ -355,7 +371,7 @@ class HueSceneController(object):
 def includeme(config):
 	from phue import Bridge
 	bridge_addr = config.registry.settings['phillips_hue_bridge']
-	config.registry['phillips_hue'] = Bridge(bridge_addr)
+	config.registry['phillips_hue'] = None#Bridge(bridge_addr)
 	# only uncomment for first run
 	# config.registry['phillips_hue_bridge'].connect()
 	config.add_request_method(
