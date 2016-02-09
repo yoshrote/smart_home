@@ -1,0 +1,69 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.16/vue.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fetch/0.11.0/fetch.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Phillips Hue Control Panel</h1>
+    </header>
+    <nav id="global-nav">
+        <a href="./lights.html" class="menu-control">Lights</a>
+         |
+        <a href="./groups.html" class="menu-control">Groups</a>
+         |
+        <a href="./scenes.html" class="menu-control">Scenes</a>
+    </nav>
+    <main id="hue-app">
+        <nav id="hue-menu">
+            <ul class="lights-list">
+                <li v-for="light in lights" data-id="{{ light.id }}"  v-on:click="loadLight">{{ light.name }}</li>
+            </ul>
+        </nav>
+        <section id="hue-control">
+            <form v-if="currentLight" class="lights-form" v-on:submit.prevent="saveLight">
+                <div>
+                    <label htmlFor="light_id">light_id</label>
+                    <input type="text" name="light_id" v-model="currentLight.light_id" disabled="disabled"></input>
+                </div>
+                <div>
+                    <label htmlFor="name">name</label>
+                    <input type="text" name="name" v-model="currentLight.name" ></input>
+                </div>
+                <div>
+                    <label htmlFor="on">on</label>
+                    <input type="checkbox" name="on" v-model="currentLight.on"></input>
+                </div>
+                <div>
+                    <label htmlFor="color">color</label>
+                    <input type="color" name="color" v-model="currentLight.color"></input>
+                </div>
+                <div>
+                    <label htmlFor="effect">effect</label>
+                    <select name="effect" v-model="currentLight.effect">
+                        <option value="none">None</option>
+                        <option value="colorloop">Color Loop</option>
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="alert">alert</label>
+                    <input type="checkbox" name="alert" v-model="currentLight.alert"></input>
+                </div>
+                <div>
+                    <label htmlFor="transitiontime">transitiontime</label>
+                    <input type="number" name="transitiontime" v-model="currentLight.transitiontime"></input>
+                </div>
+                <div>
+                    <input type="submit" value="Save"></input>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script type="text/javascript" src="lights.js"></script>
+</body>
+
+</html>
+
