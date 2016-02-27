@@ -28,13 +28,13 @@ def _serialize_group(group):
 		'group_id': group.group_id,
 		'name': group.name,
 		'on': group.on,
-		'colormode': group.colormode,
 		'brightness': group.brightness,
 		'xy': group.xy,
 		'effect': group.effect,
 		'alert': None,
 		'transitiontime': group.transitiontime,
 		'lights': [_serialize_light(l) for l in group.lights]
+		# 'colormode': group.colormode,
 		# 'hue': group.hue,
 		# 'saturation': group.saturation,
 		# 'colortemp_k': group.colortemp_k,
@@ -145,7 +145,7 @@ class HueGroup(Object):
 	effect = String()
 	alert = String()
 	transitiontime = Integer()
-	lights = List(value=EmbeddedObject(HueLight()))
+	lights = List(value=EmbeddedObject(HueLight))
 
 	@property
 	def color(self):
@@ -252,21 +252,9 @@ class HueLightResource(object):
 		except (TypeError, ValueError):
 			hue_id = value
 
-		return HueLight(
-			light_id=hue_id,
-			scene_id=0,
-			name='top',
-			on=True,
-			xy=[1.2, 0.6],
-			brightness=55.6,
-			effect='colorloop',
-			alert=False,
-			transitiontime=None
-		)
 		return HueLight.from_api(self.lights[hue_id])
 
 	def all(self):
-		return [{'id':1, 'name': 'left'}, {'id':2, 'name': 'right'}]
 		return [{'id':l.light_id, 'name':l.name} for l in self.lights.lights]
 
 class HueGroupResource(object):
@@ -341,7 +329,6 @@ class HueGroupController(object):
 		context = self.request.context
 		group_data = self.request.json_body
 		for field, value in group_data.iteritems():
-			# print field, value
 			if field == 'transitiontime' and value is None:
 				continue
 			elif field == 'color':
@@ -371,9 +358,10 @@ class HueSceneController(object):
 def includeme(config):
 	from phue import Bridge
 	bridge_addr = config.registry.settings['phillips_hue_bridge']
-	config.registry['phillips_hue'] = None#Bridge(bridge_addr)
+	username = config.registry.settings.get('phillips_hue_user')
+	config.registry['phillips_hue'] = Bridge(bridge_addr, username=username)
 	# only uncomment for first run
-	# config.registry['phillips_hue_bridge'].connect()
+	config.registry['phillips_hue'].connect()
 	config.add_request_method(
 		lambda r: r.registry['phillips_hue'],
 		'phillips_hue',
