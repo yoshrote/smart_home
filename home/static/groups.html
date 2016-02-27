@@ -1,0 +1,78 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.16/vue.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fetch/0.11.0/fetch.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Phillips Hue Control Panel</h1>
+    </header>
+    <nav id="global-nav">
+        <a href="./lights.html" class="menu-control">Lights</a>
+         |
+        <a href="./groups.html" class="menu-control">Groups</a>
+         |
+        <a href="./scenes.html" class="menu-control">Scenes</a>
+    </nav>
+    <main id="hue-app">
+        <nav id="hue-menu">
+            <ul class="groups-list">
+                <li v-for="group in groups" data-id="{{ group.id }}"  v-on:click="loadGroup">{{ group.name }}</li>
+            </ul>
+        </nav>
+        <section id="hue-control">
+            <form v-if="currentGroup" class="groups-form" v-on:submit.prevent="saveGroup">
+                <div class="form-field">
+                    <label for="group_id">group_id</label>
+                    <input type="text" name="group_id" v-model="currentGroup.group_id" disabled="disabled"></input>
+                </div>
+                <div class="form-field">
+                    <label for="name">name</label>
+                    <input type="text" name="name" v-model="currentGroup.name" ></input>
+                </div>
+                <div class="form-field">
+                    <label for="on">on</label>
+                    <input type="checkbox" name="on" v-model="currentGroup.on"></input>
+                </div>
+                <div class="form-field">
+                    <label for="color">color</label>
+                    <input type="color" name="color" v-model="currentGroup.color"></input>
+                </div>
+                <div class="form-field">
+                    <label for="effect">effect</label>
+                    <select name="effect" v-model="currentGroup.effect">
+                        <option value="none">None</option>
+                        <option value="colorloop">Color Loop</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="alert">alert</label>
+                    <input type="checkbox" name="alert" v-model="currentGroup.alert"></input>
+                </div>
+                <div class="form-field">
+                    <label for="transitiontime">transitiontime</label>
+                    <input type="number" name="transitiontime" v-model="currentGroup.transitiontime"></input>
+                </div>
+                <div class="form-field light-selector">
+                    <template v-for="light in lights">
+                        <label for="{{ light.id }}">
+                            {{ light.name }}
+                        </label>
+                        <input type="checkbox" id="{{ light.id }}" value="{{ light.id }}" v-model="currentGroup.lights"></input>
+                    </template>
+                </div>
+                <div class="form-field">
+                    <input type="submit" value="Save"></input>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script type="text/javascript" src="utils.js"></script>
+    <script type="text/javascript" src="groups.js"></script>
+</body>
+
+</html>
+

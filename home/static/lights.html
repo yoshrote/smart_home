@@ -26,34 +26,34 @@
         <section id="hue-control">
             <form v-if="currentLight" class="lights-form" v-on:submit.prevent="saveLight">
                 <div>
-                    <label htmlFor="light_id">light_id</label>
+                    <label for="light_id">light_id</label>
                     <input type="text" name="light_id" v-model="currentLight.light_id" disabled="disabled"></input>
                 </div>
                 <div>
-                    <label htmlFor="name">name</label>
+                    <label for="name">name</label>
                     <input type="text" name="name" v-model="currentLight.name" ></input>
                 </div>
                 <div>
-                    <label htmlFor="on">on</label>
+                    <label for="on">on</label>
                     <input type="checkbox" name="on" v-model="currentLight.on"></input>
                 </div>
                 <div>
-                    <label htmlFor="color">color</label>
+                    <label for="color">color</label>
                     <input type="color" name="color" v-model="currentLight.color"></input>
                 </div>
                 <div>
-                    <label htmlFor="effect">effect</label>
+                    <label for="effect">effect</label>
                     <select name="effect" v-model="currentLight.effect">
                         <option value="none">None</option>
                         <option value="colorloop">Color Loop</option>
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="alert">alert</label>
+                    <label for="alert">alert</label>
                     <input type="checkbox" name="alert" v-model="currentLight.alert"></input>
                 </div>
                 <div>
-                    <label htmlFor="transitiontime">transitiontime</label>
+                    <label for="transitiontime">transitiontime</label>
                     <input type="number" name="transitiontime" v-model="currentLight.transitiontime"></input>
                 </div>
                 <div>
@@ -62,6 +62,7 @@
             </form>
         </section>
     </main>
+    <script type="text/javascript" src="utils.js"></script>
     <script type="text/javascript" src="lights.js"></script>
 </body>
 

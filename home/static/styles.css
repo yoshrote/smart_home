@@ -43,7 +43,7 @@
 	vertical-align: top;
 	width: 500px;
 }
-.groups-form div{
+.groups-form .form-field{
 	width: 500px;
 }
 .groups-form label{
@@ -53,4 +53,22 @@
 .groups-form input, .groups-form select{
 	display: inline-block;
 	width: 200px;
+}
+
+
+.light-selector{
+	list-style-type: none;
+	padding: 0;
+	display: inline-block;
+	width: 200px;
+}
+
+.selector-buttons{
+	display: inline-block;
+	width: 50px;
+}
+.selector-buttons button{
+	display: block;
+	align: center;
+	width: 30px;
 }
