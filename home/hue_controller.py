@@ -329,6 +329,8 @@ class HueGroupController(object):
 	def set_group(self):
 		context = self.request.context
 		group_data = self.request.json_body
+		log.info("Setting group: %s", group_data)
+		api_group = Group(self.request.phillips_hue, context.group_id)
 		for field, value in group_data.iteritems():
 			if field == 'transitiontime' and value is None:
 				continue
@@ -338,6 +340,7 @@ class HueGroupController(object):
 			elif field in self.const_fields:
 				continue
 			if field =='alert' or field in self.const_fields or getattr(context, field) != value:
+				log.debug('Setting attr %s to %r', field, value)
 				setattr(context, field, value)
 
 class HueSceneController(object):
