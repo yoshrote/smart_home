@@ -308,11 +308,12 @@ class HueLightController(object):
 	def set_light(self):
 		context = self.request.context
 		light_data = self._cleanup_response(self.request.json_body)
-		print light_data
-		return
+		log.info("Setting light: %s", light_data)
+		api_light = self.request.phillips_hue[context.light_id]
 		for field, value in light_data.iteritems():
 			if (field, value) == ('alert', 'select') or getattr(context, field) != value:
-				setattr(context, field, value)
+				log.debug('Setting attr %s to %r', field, value)
+				setattr(api_light, field, value)
 
 class HueGroupController(object):
 	const_fields = ['x', 'y', 'colormode', 'group_id', 'colortemp_k', 'lights']
