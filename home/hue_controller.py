@@ -316,7 +316,7 @@ class HueLightController(object):
 				setattr(api_light, field, value)
 
 class HueGroupController(object):
-	const_fields = ['x', 'y', 'colormode', 'group_id', 'colortemp_k', 'lights']
+	const_fields = ['x', 'y', 'colormode', 'group_id', 'colortemp_k']
 	def __init__(self, request):
 		self.request = request
 
@@ -329,6 +329,9 @@ class HueGroupController(object):
 	def set_group(self):
 		context = self.request.context
 		group_data = self.request.json_body
+		if group_data['alert'] == True:
+			group_data['alert'] = 'select'
+
 		log.info("Setting group: %s", group_data)
 		api_group = Group(self.request.phillips_hue, context.group_id)
 		for field, value in group_data.iteritems():
@@ -339,9 +342,9 @@ class HueGroupController(object):
 				continue
 			elif field in self.const_fields:
 				continue
-			if field =='alert' or field in self.const_fields or getattr(context, field) != value:
+			if (field, value) == ('alert', 'select') or field in self.const_fields or getattr(context, field) != value:
 				log.debug('Setting attr %s to %r', field, value)
-				setattr(context, field, value)
+				setattr(api_group, field, value)
 
 class HueSceneController(object):
 	def __init__(self, request):
