@@ -1,21 +1,30 @@
 class NestController(object):
 	def __init__(self, request):
+		self.request = request
 		self.nest = self.request.nest
 
 	def get_status(self):
 		self.nest.get_status()
 		return self.nest.show_status()
 
+	def get_all(self):
+		self.nest.get_status()
+		return self.nest.status
+
 	def show_status(self):
+		self.nest.get_status()
 		return self.nest.show_status()
 
 	def show_curtemp(self):
+		self.nest.get_status()
 		return float(self.nest.show_curtemp())
 
 	def show_target(self):
+		self.nest.get_status()
 		return float(self.nest.show_target())
 
 	def show_curmode(self):
+		self.nest.get_status()
 		return self.nest.show_curmode()
 
 	def set_temperature(self):
@@ -34,7 +43,7 @@ class NestController(object):
 		return self.nest.toggle_away()
 
 def includeme(config):
-	from nest_thermostat import Nest
+	from home.nest import Nest
 	n = Nest(
 		config.registry.settings['nest.username'],
 		config.registry.settings['nest.password'],
@@ -47,18 +56,18 @@ def includeme(config):
 	config.registry['nest_thermostat'] = n
 	config.add_request_method(
 		lambda r: r.registry['nest_thermostat'],
-		'nest_thermostat',
+		'nest',
 		property=True
 	)
-
-	config.add_route('nest' '/*traverse')
+	config.add_route('nest', '/*traverse')
 	# Status
 	config.add_view(
 		route_name='nest',
 		name='',
 		view=NestController,
-		attr='show_status',
+		attr='get_all',
 		request_method='GET',
+		renderer='json',
 	)
 	config.add_view(
 		route_name='nest',
@@ -66,6 +75,7 @@ def includeme(config):
 		view=NestController,
 		attr='show_status',
 		request_method='GET',
+		renderer='json',
 	)
 	config.add_view(
 		route_name='nest',
@@ -81,6 +91,7 @@ def includeme(config):
 		view=NestController,
 		attr='show_curtemp',
 		request_method='GET',
+		renderer='string',
 	)
 	config.add_view(
 		route_name='nest',
@@ -88,6 +99,7 @@ def includeme(config):
 		view=NestController,
 		attr='show_target',
 		request_method='GET',
+		renderer='string',
 	)
 	config.add_view(
 		route_name='nest',
@@ -95,6 +107,7 @@ def includeme(config):
 		view=NestController,
 		attr='set_temperature',
 		request_method='POST',
+		renderer='string',
 	)
 	# Fan
 	config.add_view(
@@ -103,6 +116,7 @@ def includeme(config):
 		view=NestController,
 		attr='set_fan',
 		request_method='POST',
+		renderer='string',
 	)
 	# Mode
 	config.add_view(
@@ -111,6 +125,7 @@ def includeme(config):
 		view=NestController,
 		attr='set_mode',
 		request_method='POST',
+		renderer='string',
 	)
 	# Toggle Away
 	config.add_view(
@@ -119,4 +134,5 @@ def includeme(config):
 		view=NestController,
 		attr='toggle_away',
 		request_method='POST',
+		renderer='string',
 	)

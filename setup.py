@@ -13,7 +13,6 @@ requires = [
     'pyramid_chameleon',
     'pyramid_debugtoolbar',
     'waitress',
-    'nest-thermostat',
     'phue',
     'soco'
     ]

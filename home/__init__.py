@@ -18,7 +18,7 @@ def main(global_config, **settings):
 	config = Configurator(settings=settings)
 	# Discover smart devices
 	config.include(configure_sonos)
-	# config.include('home.nest_controller', route_prefix='nest')
+	config.include('home.nest_controller', route_prefix='nest')
 	config.include('home.hue_controller', route_prefix='hue')
 
 	config.include('pyramid_chameleon')
